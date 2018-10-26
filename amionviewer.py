@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import *
 from bs4 import BeautifulSoup
 import calendar
 import datetime
@@ -229,19 +230,34 @@ class ToggledFrame(tk.Frame):
 
 root = tk.Tk()
 root.title('test')
-root.resizable(0, 0)
+root.configure(background='black')
+root.grid_columnconfigure(0, weight=1)
+root.grid_rowconfigure(0, weight=1)
+#root.resizable(0, 0)
 width = root.winfo_screenwidth()
 height = root.winfo_screenheight()
 x = (width/2) - (width/2)
 y = (height/2)
 root.geometry('%dx%d+%d+%d' % (width, 500, x, y))
+# ////////////////////////////// Frame setup
 
-print(y)
-frame1 = tk.Frame(root)
-frame2 = tk.Frame(root)
-frame3 = tk.Frame(root)
-frame4 = tk.Frame(root)
-frame5 = tk.Frame(root)
+
+def raiser(frame):
+	print('test')
+	frame.tkraise()
+
+
+mainframe = tk.Frame(root)
+mainframe.grid(row=0, column=0, sticky="nsew")
+
+aboutframe = tk.Frame(root, bg="blue")
+aboutframe.grid(row=0, column=0, sticky="nsew")
+
+frame1 = tk.Frame(mainframe)
+frame2 = tk.Frame(mainframe)
+frame3 = tk.Frame(mainframe)
+frame4 = tk.Frame(mainframe)
+frame5 = tk.Frame(mainframe)
 
 frame1.grid(row=0, column=0, sticky="nsew")
 frame2.grid(row=0, column=1, sticky="nsew")
@@ -249,12 +265,14 @@ frame3.grid(row=0, column=2, sticky="nsew")
 frame4.grid(row=0, column=3, sticky="nsew")
 frame5.grid(row=0, column=4, sticky="nsew")
 
-root.grid_columnconfigure(0, weight=1, uniform="group1")
-root.grid_columnconfigure(1, weight=1, uniform="group1")
-root.grid_columnconfigure(2, weight=1, uniform="group1")
-root.grid_columnconfigure(3, weight=1, uniform="group1")
-root.grid_columnconfigure(4, weight=1, uniform="group1")
-root.grid_rowconfigure(0, weight=1)
+mainframe.grid_columnconfigure(0, weight=1, uniform="group1")
+mainframe.grid_columnconfigure(1, weight=1, uniform="group1")
+mainframe.grid_columnconfigure(2, weight=1, uniform="group1")
+mainframe.grid_columnconfigure(3, weight=1, uniform="group1")
+mainframe.grid_columnconfigure(4, weight=1, uniform="group1")
+mainframe.grid_rowconfigure(0, weight=1)
+
+
 
 # Create a label
 i = 0
@@ -296,4 +314,18 @@ while i < itemCount:
 		b += 1
 		i += 1
 
+
+# ////////////////////////////// Top menu
+menu = Menu(root)
+root.config(menu=menu)
+filemenu = Menu(menu)
+menu.add_cascade(label='File', menu=filemenu)
+filemenu.add_command(label='New')
+filemenu.add_command(label='Open...')
+filemenu.add_separator()
+filemenu.add_command(label='Exit', command=root.quit)
+helpmenu = Menu(menu)
+menu.add_cascade(label='Help', menu=helpmenu)
+helpmenu.add_command(label='About', command=lambda: raiser(aboutframe))
+raiser(mainframe)
 root.mainloop()
