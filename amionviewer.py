@@ -7,8 +7,13 @@ import datetime
 import time
 from robobrowser import RoboBrowser
 from pynput import mouse
+from pynput import keyboard
 from pynput.keyboard import Key, Controller
 from configparser import ConfigParser
+from PIL import Image, ImageTk
+import os
+import sys
+import re
 
 base_url = 'https://www.amion.com/'
 browser = RoboBrowser()
@@ -171,10 +176,10 @@ class ToggledFrame(tk.Frame):
 		self.sub_frame = tk.Frame(self, relief="sunken", borderwidth=1)
 		self.sub_frame.pack(fill="x", expand=1)
 
-		self.sub_toggle_button = tk.Button(self.sub_frame, text="x", width=2, command=self.delete)
+		self.sub_toggle_button = tk.Button(self.sub_frame, text="x", width=1, command=self.delete)
 		self.sub_toggle_button.pack(side= "right")
 
-		self.sub_auto_button = tk.Button(self.sub_frame, text="%", width=2, command=self.clicked)
+		self.sub_auto_button = tk.Button(self.sub_frame, text="%", width=2)
 		self.sub_auto_button.pack(side= "left")
 
 	def toggle(self):
@@ -186,47 +191,75 @@ class ToggledFrame(tk.Frame):
 			self.toggle_button.configure(text='+')
 
 	def delete(self):
-		self.sub_frame.forget()
-		self.title_frame.forget()
+		deleteprompt = Popup(self, 1, self.currentTeamName).get_boolean()
+		if deleteprompt:
+			print(deleteprompt)
+			self.sub_frame.forget()
+			self.title_frame.forget()
+			self.destroy()
+			deleteArray.append(self.currentTeamName)
+			deleteString= ','.join(deleteArray)
+			config.set('frames', 'key', deleteString)
+			with open('config.ini', 'w') as f:
+				config.write(f)
+		else:
+			print(deleteprompt)
+
+class Popup(tk.Toplevel):
+	value = 0
+
+	def __init__(self, master, callinfo, teaminfo):
+		tk.Toplevel.__init__(self, master)
+
+		x = root.winfo_x()
+		y = root.winfo_y()
+
+		w = self.winfo_width()
+		h = self.winfo_height()
+
+		dx = root.winfo_screenwidth()
+		dy = root.winfo_screenheight()
+		self.geometry("%dx%d+%d+%d" % (200, 200, x, y))
+
+		if callinfo == 1:
+			labeltext1 = 'Are you sure you want to delete ' + teaminfo
+			labeltext2 = 'WARNING: To restore deleted teams, go to Help >> Reset my List'
+
+		elif callinfo == 2:
+			labeltext1= 'Would you like to reset your list?'
+			labeltext2= 'Resetting will bring back all items that you had previously cleared'
+
+		toplabel = tk.Label(self, height=1, font='Helvetica 14', text=labeltext1)
+		toplabel.pack()
+
+		warning = tk.Label(self, text=labeltext2)
+		warning.pack()
+
+		bottomFrame = Frame(self)
+		bottomFrame.pack()
+		btn = tk.Button(bottomFrame, text="OK", command=self.deleteframe)
+		btn.pack(side=LEFT)
+		btn = tk.Button(bottomFrame, text="CANCEL", command=self.canceldelete)
+		btn.pack(side=LEFT)
+
+		self.transient(root) #set to be on top of the main window
+		self.grab_set() #hijack all commands from the master (clicks on the main window are ignored)
+		root.wait_window(self) #pause anything on the main window until this one closes (optional)
+
+	def deleteframe(self):
+		self.value = 1
 		self.destroy()
-		deleteArray.append(self.currentTeamName)
-		deleteString= ','.join(deleteArray)
-		config.set('frames', 'key', deleteString)
-		with open('config.ini', 'w') as f:
-			config.write(f)
 
-	def clicked(self):
-		print('listener start!')
+	def canceldelete(self):
+		self.value = 0
+		self.destroy()
 
-		def on_click(x, y, button, pressed):
-			# Delay
-			time.sleep(1)
-			print('{0} at {1}'.format('Pressed' if pressed else 'Released', (x, y)))
-			# Press and release space. If EPIC's layout changes, make the necessary changes here;
-			keyboard.type('Inpatient')
-			keyboard.press(Key.enter)
-			keyboard.release(Key.enter)
-			keyboard.type(self.currentTeamName)
-			keyboard.press(Key.enter)
-			keyboard.release(Key.enter)
-			keyboard.press(Key.enter)
-			keyboard.release(Key.enter)
-			keyboard.press(Key.enter)
-			keyboard.release(Key.enter)
-			keyboard.type(self.currentAttendingName)
-			keyboard.press(Key.enter)
-			keyboard.release(Key.enter)
-			keyboard.type(self.currentAttendingName)
-			return False
+	def get_boolean(self):
+		return self.value
 
-			if not pressed:
-				# Stop listener
-				return False
 
-		# Collect events until released
-		with mouse.Listener(on_click=on_click) as listener:
-			listener.join()
-
+# ///////////////////////////////////////////////////////////////////////// Root Frame Setup
+# /////////////////////////////////////////////////////////////////////////
 
 root = tk.Tk()
 root.title('test')
@@ -239,8 +272,9 @@ height = root.winfo_screenheight()
 x = (width/2) - (width/2)
 y = (height/2)
 root.geometry('%dx%d+%d+%d' % (width, 500, x, y))
-# ////////////////////////////// Frame setup
 
+# ///////////////////////////////////////////////////////////////////////// Frame setup
+# /////////////////////////////////////////////////////////////////////////
 
 def raiser(frame):
 	print('test')
@@ -249,9 +283,6 @@ def raiser(frame):
 
 mainframe = tk.Frame(root)
 mainframe.grid(row=0, column=0, sticky="nsew")
-
-aboutframe = tk.Frame(root, bg="blue")
-aboutframe.grid(row=0, column=0, sticky="nsew")
 
 frame1 = tk.Frame(mainframe)
 frame2 = tk.Frame(mainframe)
@@ -273,12 +304,38 @@ mainframe.grid_columnconfigure(4, weight=1, uniform="group1")
 mainframe.grid_rowconfigure(0, weight=1)
 
 
+aboutframe = tk.Frame(root, bg="blue")
+aboutframe.grid(row=0, column=0, sticky="nsew")
 
-# Create a label
+aframe1 = tk.Frame(aboutframe)
+aframe2 = tk.Frame(aboutframe)
+
+aframe1.grid(row=0, column=0, sticky="nsew")
+aframe2.grid(row=0, column=1, sticky="nsew")
+
+aboutframe.grid_columnconfigure(0, weight=1, uniform="group1")
+aboutframe.grid_columnconfigure(1, weight=1, uniform="group1")
+aboutframe.grid_rowconfigure(0,weight=1)
+
+raiser(mainframe)
+
+# ///////////////////////////////////////////////////////////////////////// Main Frame
+# /////////////////////////////////////////////////////////////////////////
+
 i = 0
 b = 0
 currentColumn = [frame1, frame2, frame3, frame4, frame5]
 colorWords = ['Blue', 'Red', 'Aqua', 'Purple', 'Green', 'Yellow']
+
+
+def endswith(endvalue):
+	# Check if current passed in value ends with a number or not
+	m = re.search(r'\d+$', endvalue)
+	# if the string ends in digits m will be a Match object, or None otherwise.
+	if m is not None:
+		print(endvalue + ' contains a digit')
+		return 1
+
 
 while i < itemCount:
 	if not set(deleteArray).isdisjoint(teamList[i]):
@@ -289,6 +346,12 @@ while i < itemCount:
 			singleTeam = teamList[i]
 		except IndexError:
 			singleTeam = teamList[0]
+
+		# endswith() function used to check if team has a numbered ending, signifying sickcall and removes it.
+		if endswith(singleTeam[date]):
+			singleTeam[date] = singleTeam[date][:-1]
+			print(singleTeam[date])
+
 		singleTeam = [attendingDict.get(item, item) for item in singleTeam]
 
 		# Checks count of b and then split up the teams per frame
@@ -314,8 +377,41 @@ while i < itemCount:
 		b += 1
 		i += 1
 
+# ///////////////////////////////////////////////////////////////////////// About Frame
+# /////////////////////////////////////////////////////////////////////////
 
-# ////////////////////////////// Top menu
+backphoto=PhotoImage(file="back.png")
+backbutton= Button(aframe1, image=backphoto, text="back", command=lambda: raiser(mainframe), height=50, width=150)
+backbutton.grid(column=0, row=0)
+
+alabel1 = tk.Label(aframe1, font=(None, 22), justify=tk.LEFT, padx=5,
+				   text="About")
+alabel1.grid(column=0, row=1)
+alabel2 = tk.Label(aframe1, font=(None, 13), justify=tk.LEFT, padx=5, wraplength=y,
+				   text="Summary:\nAmionViewer is a windows application built using Python and powered by amion.com, a site designed for physician scheduling." +
+						"\n\nThe purpose of this application is to streamline the process of looking up physician schedules by showing only relevant information to the department looking for said information. Designed under the philosophy that less is more, only showing the relevant information to those looking for it should increase productivity and automate mundane tasks, leaving employees free to perform more important things.")
+alabel2.grid(column=0, row=2)
+
+
+atitlelabelr = tk.Label(aframe2, font=(None, 22), justify=tk.LEFT, padx=5,
+						text="Dev Profiles")
+atitlelabelr.grid(column=0, row=0)
+alabel1r = tk.Label(aframe2, font=(None, 13), justify=tk.LEFT, padx=5,
+					text="Trong Nguyen\nBeginner developer. Core functionality designer and project head. Began development on 10/03/2018.\n\nContact info: onionsinmypants@gmail.com")
+alabel1r.grid(column=0, row=2)
+
+atitlelabelr2 = tk.Label(aframe2, font=(None, 22), justify=tk.LEFT, padx=5,
+						 text="App info")
+atitlelabelr2.grid(column=0, row=3)
+alabel2r = tk.Label(aframe2, font=(None, 13), justify=tk.LEFT, padx=5,
+					text="App version: 1.0.0"
+						 + "\nCode Audit: https://github.com/onionsinmypants/AmionViewer"
+						 + "\nChangelog:\n")
+alabel2r.grid(column=0, row=4)
+
+# ///////////////////////////////////////////////////////////////////////// Top menu
+# /////////////////////////////////////////////////////////////////////////
+
 menu = Menu(root)
 root.config(menu=menu)
 filemenu = Menu(menu)
@@ -326,6 +422,20 @@ filemenu.add_separator()
 filemenu.add_command(label='Exit', command=root.quit)
 helpmenu = Menu(menu)
 menu.add_cascade(label='Help', menu=helpmenu)
+helpmenu.add_command(label='Reset my List', command=lambda: deletePreferences())
+helpmenu.add_separator()
 helpmenu.add_command(label='About', command=lambda: raiser(aboutframe))
-raiser(mainframe)
+helpmenu.add_command(label='Check for Updates', command=lambda: raiser(aboutframe))
+
+def deletePreferences():
+	deleteprompt = Popup(root, 2, "").get_boolean()
+	if deleteprompt:
+		print(deleteprompt)
+		open("config.ini", "w").close()
+		python = sys.executable
+		os.execl(python, python, * sys.argv)
+
+	else:
+		print(deleteprompt)
+
 root.mainloop()
