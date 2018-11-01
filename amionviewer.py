@@ -280,51 +280,71 @@ def raiser(frame):
 	print('test')
 	frame.tkraise()
 
+class CreateWindow(tk.Frame):
 
-mainframe = tk.Frame(root)
+	def __init__(self, parent, frametype, *args):
+		if frametype == 0:
+
+			tk.Frame.__init__(self, parent)
+
+			self.grid_columnconfigure(0, weight=1, uniform="group1")
+			self.grid_columnconfigure(1, weight=1, uniform="group1")
+			self.grid_columnconfigure(2, weight=1, uniform="group1")
+			self.grid_columnconfigure(3, weight=1, uniform="group1")
+			self.grid_columnconfigure(4, weight=1, uniform="group1")
+			self.grid_rowconfigure(0, weight=1)
+		elif frametype == 1:
+
+			tk.Frame.__init__(self, parent)
+
+			self.grid_columnconfigure(0, weight=1, uniform="group1")
+			self.grid_columnconfigure(1, weight=1, uniform="group1")
+			self.grid_rowconfigure(0,weight=1)
+
+
+
+	def FrameCreation(self, frametype):
+		if frametype == 0:
+			frame1 = tk.Frame(self)
+			frame2 = tk.Frame(self)
+			frame3 = tk.Frame(self)
+			frame4 = tk.Frame(self)
+			frame5 = tk.Frame(self)
+
+			frame1.grid(row=0, column=0, sticky="nsew")
+			frame2.grid(row=0, column=1, sticky="nsew")
+			frame3.grid(row=0, column=2, sticky="nsew")
+			frame4.grid(row=0, column=3, sticky="nsew")
+			frame5.grid(row=0, column=4, sticky="nsew")
+
+			return [frame1, frame2, frame3, frame4, frame5]
+		elif frametype == 1:
+			aframe = tk.Frame(self)
+
+			aframe.grid(row=0, column=0, sticky="nsew")
+
+			return aframe
+
+
+
+
+
+mainframe = CreateWindow(root, frametype=0)
 mainframe.grid(row=0, column=0, sticky="nsew")
+currentColumn = mainframe.FrameCreation(0)
 
-frame1 = tk.Frame(mainframe)
-frame2 = tk.Frame(mainframe)
-frame3 = tk.Frame(mainframe)
-frame4 = tk.Frame(mainframe)
-frame5 = tk.Frame(mainframe)
-
-frame1.grid(row=0, column=0, sticky="nsew")
-frame2.grid(row=0, column=1, sticky="nsew")
-frame3.grid(row=0, column=2, sticky="nsew")
-frame4.grid(row=0, column=3, sticky="nsew")
-frame5.grid(row=0, column=4, sticky="nsew")
-
-mainframe.grid_columnconfigure(0, weight=1, uniform="group1")
-mainframe.grid_columnconfigure(1, weight=1, uniform="group1")
-mainframe.grid_columnconfigure(2, weight=1, uniform="group1")
-mainframe.grid_columnconfigure(3, weight=1, uniform="group1")
-mainframe.grid_columnconfigure(4, weight=1, uniform="group1")
-mainframe.grid_rowconfigure(0, weight=1)
-
-
-aboutframe = tk.Frame(root, bg="blue")
+aboutframe = CreateWindow(root, frametype=1)
 aboutframe.grid(row=0, column=0, sticky="nsew")
-
-aframe1 = tk.Frame(aboutframe)
-aframe2 = tk.Frame(aboutframe)
-
-aframe1.grid(row=0, column=0, sticky="nsew")
-aframe2.grid(row=0, column=1, sticky="nsew")
-
-aboutframe.grid_columnconfigure(0, weight=1, uniform="group1")
-aboutframe.grid_columnconfigure(1, weight=1, uniform="group1")
-aboutframe.grid_rowconfigure(0,weight=1)
+currentAboutFrame = aboutframe.FrameCreation(1)
+testLabel = Label(currentAboutFrame, text='testing')
+testLabel.pack()
 
 raiser(mainframe)
-
 # ///////////////////////////////////////////////////////////////////////// Main Frame
 # /////////////////////////////////////////////////////////////////////////
 
 i = 0
 b = 0
-currentColumn = [frame1, frame2, frame3, frame4, frame5]
 colorWords = ['Blue', 'Red', 'Aqua', 'Purple', 'Green', 'Yellow']
 
 
@@ -380,34 +400,7 @@ while i < itemCount:
 # ///////////////////////////////////////////////////////////////////////// About Frame
 # /////////////////////////////////////////////////////////////////////////
 
-backphoto=PhotoImage(file="back.png")
-backbutton= Button(aframe1, image=backphoto, text="back", command=lambda: raiser(mainframe), height=50, width=150)
-backbutton.grid(column=0, row=0)
 
-alabel1 = tk.Label(aframe1, font=(None, 22), justify=tk.LEFT, padx=5,
-				   text="About")
-alabel1.grid(column=0, row=1)
-alabel2 = tk.Label(aframe1, font=(None, 13), justify=tk.LEFT, padx=5, wraplength=y,
-				   text="Summary:\nAmionViewer is a windows application built using Python and powered by amion.com, a site designed for physician scheduling." +
-						"\n\nThe purpose of this application is to streamline the process of looking up physician schedules by showing only relevant information to the department looking for said information. Designed under the philosophy that less is more, only showing the relevant information to those looking for it should increase productivity and automate mundane tasks, leaving employees free to perform more important things.")
-alabel2.grid(column=0, row=2)
-
-
-atitlelabelr = tk.Label(aframe2, font=(None, 22), justify=tk.LEFT, padx=5,
-						text="Dev Profiles")
-atitlelabelr.grid(column=0, row=0)
-alabel1r = tk.Label(aframe2, font=(None, 13), justify=tk.LEFT, padx=5,
-					text="Trong Nguyen\nBeginner developer. Core functionality designer and project head. Began development on 10/03/2018.\n\nContact info: onionsinmypants@gmail.com")
-alabel1r.grid(column=0, row=2)
-
-atitlelabelr2 = tk.Label(aframe2, font=(None, 22), justify=tk.LEFT, padx=5,
-						 text="App info")
-atitlelabelr2.grid(column=0, row=3)
-alabel2r = tk.Label(aframe2, font=(None, 13), justify=tk.LEFT, padx=5,
-					text="App version: 1.0.0"
-						 + "\nCode Audit: https://github.com/onionsinmypants/AmionViewer"
-						 + "\nChangelog:\n")
-alabel2r.grid(column=0, row=4)
 
 # ///////////////////////////////////////////////////////////////////////// Top menu
 # /////////////////////////////////////////////////////////////////////////
