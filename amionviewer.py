@@ -14,6 +14,7 @@ from PIL import Image, ImageTk
 import os
 import sys
 import re
+import urllib.request
 
 base_url = 'https://www.amion.com/'
 browser = RoboBrowser()
@@ -282,7 +283,7 @@ def raiser(frame):
 
 class CreateWindow(tk.Frame):
 
-	def __init__(self, parent, frametype, *args):
+	def __init__(self, parent, frametype, *args, **options):
 		if frametype == 0:
 
 			tk.Frame.__init__(self, parent)
@@ -293,51 +294,59 @@ class CreateWindow(tk.Frame):
 			self.grid_columnconfigure(3, weight=1, uniform="group1")
 			self.grid_columnconfigure(4, weight=1, uniform="group1")
 			self.grid_rowconfigure(0, weight=1)
+
+			self.frame1 = tk.Frame(self)
+			self.frame2 = tk.Frame(self)
+			self.frame3 = tk.Frame(self)
+			self.frame4 = tk.Frame(self)
+			self.frame5 = tk.Frame(self)
+
+			self.frame1.grid(row=0, column=0, sticky="nsew")
+			self.frame2.grid(row=0, column=1, sticky="nsew")
+			self.frame3.grid(row=0, column=2, sticky="nsew")
+			self.frame4.grid(row=0, column=3, sticky="nsew")
+			self.frame5.grid(row=0, column=4, sticky="nsew")
+
 		elif frametype == 1:
 
-			tk.Frame.__init__(self, parent)
+			tk.Frame.__init__(self, parent, *args, **options)
 
 			self.grid_columnconfigure(0, weight=1, uniform="group1")
-			self.grid_columnconfigure(1, weight=1, uniform="group1")
-			self.grid_rowconfigure(0,weight=1)
+			self.grid_rowconfigure(0, weight=1)
 
+			self.aframe = tk.Frame(self, bg='blue')
+			self.aframe.pack(anchor= 'center', fill='both', expand= 'true', padx='500', pady='50')
 
 
 	def FrameCreation(self, frametype):
 		if frametype == 0:
-			frame1 = tk.Frame(self)
-			frame2 = tk.Frame(self)
-			frame3 = tk.Frame(self)
-			frame4 = tk.Frame(self)
-			frame5 = tk.Frame(self)
-
-			frame1.grid(row=0, column=0, sticky="nsew")
-			frame2.grid(row=0, column=1, sticky="nsew")
-			frame3.grid(row=0, column=2, sticky="nsew")
-			frame4.grid(row=0, column=3, sticky="nsew")
-			frame5.grid(row=0, column=4, sticky="nsew")
-
-			return [frame1, frame2, frame3, frame4, frame5]
+			return [self.frame1, self.frame2, self.frame3, self.frame4, self.frame5]
 		elif frametype == 1:
-			aframe = tk.Frame(self)
-
-			aframe.grid(row=0, column=0, sticky="nsew")
-
-			return aframe
-
-
-
+			return self.aframe
 
 
 mainframe = CreateWindow(root, frametype=0)
 mainframe.grid(row=0, column=0, sticky="nsew")
 currentColumn = mainframe.FrameCreation(0)
 
-aboutframe = CreateWindow(root, frametype=1)
+aboutframe = CreateWindow(root, frametype=1, bg='red')
 aboutframe.grid(row=0, column=0, sticky="nsew")
 currentAboutFrame = aboutframe.FrameCreation(1)
-testLabel = Label(currentAboutFrame, text='testing')
-testLabel.pack()
+
+data = urllib.request.urlopen('https://raw.githubusercontent.com/onionsinmypants/CryptoTrackerSimple/master/.gitignore')
+
+
+dataText = ''
+for line in data:
+	dataText += line.decode()
+
+print(dataText)
+backphoto=PhotoImage(file="back.png")
+backbutton= Button(currentAboutFrame, image=backphoto, text="back", command=lambda: raiser(mainframe), height=50, width=150)
+backbutton.pack(anchor='nw')
+
+testLabel = Label(currentAboutFrame, text=dataText, borderwidth=2, relief='ridge')
+testLabel.pack(fill=X)
 
 raiser(mainframe)
 # ///////////////////////////////////////////////////////////////////////// Main Frame
