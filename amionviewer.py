@@ -65,7 +65,7 @@ getDateInfo = datetime.now()
 # These follow variables are used to see set the dates for each tab created.
 dateVarToday = getDateInfo.strftime("	Today: %m/%d	")  # Formatted date for : Today
 dateVarTmr = (getDateInfo + timedelta(days=1)).strftime("	Tomorrow: %m/%d	")  # Formatted date for : Tomorrow
-dateVarNext = (getDateInfo + timedelta(days=2)).strftime("	Following: %m/%d/%Y	")  # Formatted date for : Next
+dateVarNext = (getDateInfo + timedelta(days=1)).strftime("	Following: %m/%d/%Y	")  # Formatted date for : Next
 
 currentYear = getDateInfo.year
 currentMonth = getDateInfo.month
@@ -329,9 +329,11 @@ class Popup(tk.Toplevel):
 		w = self.winfo_width()
 		h = self.winfo_height()
 
-		dx = root.winfo_screenwidth()
-		dy = root.winfo_screenheight()
-		self.geometry("%dx%d+%d+%d" % (200, 200, x, y))
+		dx = (root.winfo_width()/2)
+		dy = (root.winfo_height()/2)
+		self.resizable(0, 0)
+
+		self.geometry("%dx%d+%d+%d" % (500, 100, x+dx, y+dy))
 
 		if callinfo == 1:
 			labeltext1 = 'Are you sure you want to save your current settings?'
@@ -407,33 +409,36 @@ class TeamList:
 				except IndexError:
 					singleTeam = teamList[0]
 
-				# endswith() function used to check if team has a numbered ending, signifying sickcall and removes it.
-				if endsWith(singleTeam[date + tab]):
-					singleTeam[date+tab] = singleTeam[date+tab][:-1]
+				try:
+					# endswith() function used to check if team has a numbered ending, signifying sickcall and removes it.
+					if endsWith(singleTeam[date + tab]):
+						singleTeam[date+tab] = singleTeam[date+tab][:-1]
 
-				singleTeam = [attendingDict.get(item, item) for item in singleTeam]
+					singleTeam = [attendingDict.get(item, item) for item in singleTeam]
 
-				# Checks count of b and then split up the teams per frame
-				if b == 5:
-					b = 0
+					# Checks count of b and then split up the teams per frame
+					if b == 5:
+						b = 0
 
-				# Checks if singleTeam contains keywords we can use to decorate the text
-				for currentColor in colorWords:
-					if currentColor in singleTeam[0]:
-						setColor = currentColor
-						break
-					else:
-						setColor = 'white'
-				teamName = ToggledFrame(currentColumn[b], text=singleTeam[0], text2=singleTeam[date+tab], relief="groove",
-										borderwidth=4, bg=setColor)
-				teamName.pack(fill="x", pady=2, padx=2, anchor="n")
+					# Checks if singleTeam contains keywords we can use to decorate the text
+					for currentColor in colorWords:
+						if currentColor in singleTeam[0]:
+							setColor = currentColor
+							break
+						else:
+							setColor = 'white'
+					teamName = ToggledFrame(currentColumn[b], text=singleTeam[0], text2=singleTeam[date+tab], relief="groove",
+											borderwidth=4, bg=setColor)
+					teamName.pack(fill="x", pady=2, padx=2, anchor="n")
 
-				entry = ttk.Entry(teamName.sub_frame)
-				entry.insert(0, singleTeam[date+tab])
-				entry.pack()
+					entry = ttk.Entry(teamName.sub_frame)
+					entry.insert(0, singleTeam[date+tab])
+					entry.pack()
 
-				b += 1
-				i += 1
+					b += 1
+					i += 1
+				except IndexError:
+					break
 
 
 # ///////////////////////////////////////////////////////////////////////// About and Settings
@@ -590,7 +595,7 @@ aboutframe = CreateWindow(root, frametype=1)
 aboutframe.grid(row=0, column=0, sticky="nsew")
 currentAboutFrame = aboutframe.frameCreation(1)
 # URL for the about frame
-abouturl = 'https://github.com/onionsinmypants/AmionViewer/blob/master/README.txt'
+abouturl = 'https://raw.githubusercontent.com/onionsinmypants/AmionViewer/master/README.txt'
 
 backphoto = PhotoImage(file="back.png")
 backbutton = Button(currentAboutFrame, image=backphoto, text="back", command=lambda: raiser(tabControl), relief=FLAT)
@@ -649,9 +654,6 @@ menu = Menu(root)
 root.config(menu=menu)
 filemenu = Menu(menu)
 menu.add_cascade(label='File', menu=filemenu)
-filemenu.add_command(label='New')
-filemenu.add_command(label='Open...')
-filemenu.add_separator()
 filemenu.add_command(label='Exit', command=root.quit)
 settingsmenu = Menu(menu)
 menu.add_cascade(label='Settings', menu=settingsmenu)
